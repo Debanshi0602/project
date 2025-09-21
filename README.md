@@ -1,75 +1,55 @@
-# OpenFrame Overview
+# Low-Power Peripheral Accelerator for Sensor Data (Microwatt Integration)
 
-The OpenFrame Project provides an empty harness chip that differs significantly from the Caravel and Caravan designs. Unlike Caravel and Caravan, which include integrated SoCs and additional features, OpenFrame offers only the essential padframe, providing users with a clean slate for their custom designs.
+## 📌 Project Overview
+Embedded systems often need to handle high-frequency or noisy sensor data streams. Processing this raw data on the CPU (Microwatt) increases power consumption and latency.  
+This project proposes a **low-power hardware accelerator** that preprocesses sensor data before handing it off to the Microwatt core.  
 
-<img width="256" alt="Screenshot 2024-06-24 at 12 53 39 PM" src="https://github.com/efabless/openframe_timer_example/assets/67271180/ff58b58b-b9c8-4d5e-b9bc-bf344355fa80">
+By integrating the accelerator as a peripheral, repetitive filtering and compression tasks are offloaded from the CPU, reducing switching activity and improving overall system efficiency.
 
-## Key Characteristics of OpenFrame
+---
 
-1. **Minimalist Design:** 
-   - No integrated SoC or additional circuitry.
-   - Only includes the padframe, a power-on-reset circuit, and a digital ROM containing the 32-bit project ID.
+## 🎯 Objectives
+- Design and implement a **sensor preprocessing accelerator** in Verilog.  
+- Provide two main functions:  
+  - **Moving Average Filter** → for noise reduction.  
+  - **Run-Length Compression** → for simple data compression.  
+- Interface with Microwatt via a **memory-mapped I/O peripheral**.  
+- Compare CPU-only vs. accelerator-based implementations in terms of performance and power.  
+- Provide reproducible testbenches, simulation results, and PPA analysis.  
 
-2. **Padframe Compatibility:**
-   - The padframe design and pin placements match those of the Caravel and Caravan chips, ensuring compatibility and ease of transition between designs.
-   - Pin types are identical, with power and ground pins positioned similarly and the same power domains available.
+---
 
-3. **Flexibility:**
-   - Provides full access to all GPIO controls.
-   - Maximizes the user project area, allowing for greater customization and integration of alternative SoCs or user-specific projects at the same hierarchy level.
+## 🏗️ Methodology
+1. **RTL Design**  
+   - Implement modules for filtering and compression.  
+   - Develop a top-level wrapper for Microwatt integration.  
 
-4. **Simplified I/O:**
-   - Pins that previously connected to CPU functions (e.g., flash controller interface, SPI interface, UART) are now repurposed as general-purpose I/O, offering flexibility for various applications.
+2. **Verification**  
+   - Write Verilog testbenches to simulate real sensor data.  
+   - Verify functional correctness of both filter and compressor.  
 
-The OpenFrame harness is ideal for those looking to implement custom SoCs or integrate user projects without the constraints of an existing SoC.
+3. **Integration with Microwatt**  
+   - Expose accelerator as a memory-mapped peripheral.  
+   - Demonstrate data transfer between Microwatt and accelerator.  
 
-## Features
+4. **Evaluation**  
+   - Run workloads in simulation (GHDL / Verilator).  
+   - Measure cycle savings and switching activity.  
+   - Compare against CPU-only software implementation.  
 
-1. 44 configurable GPIOs.
-2. User area of approximately 15mm².
-3. Supports digital, analog, or mixed-signal designs.
+5. **Documentation & Results**  
+   - Document block diagrams, methodology, and results.  
+   - Summarize PPA (Power, Performance, Area) trade-offs.  
 
-# openframe_timer_example
+---
 
-This example implements a simple timer and connects it to the GPIOs.
+## 🔧 Tools & Technologies
+- **HDL**: Verilog  
+- **Simulation**: GHDL, Verilator  
+- **Synthesis/PPA**: Yosys, OpenROAD  
+- **Microwatt Core**: [OpenPOWER Microwatt](https://github.com/antonblanchard/microwatt)  
+- **Version Control**: Git + GitHub  
 
-## Installation and Setup
+---
 
-First, clone the repository:
-
-```bash
-git clone https://github.com/efabless/openframe_timer_example.git
-cd openframe_timer_example
-```
-
-Then, download all dependencies:
-
-```bash
-make setup
-```
-
-## Hardening the Design
-
-In this example, we will harden the timer. You will need to harden your own design similarly.
-
-```bash
-make user_proj_timer
-```
-
-Once you have hardened your design, integrate it into the OpenFrame wrapper:
-
-```bash
-make openframe_project_wrapper
-```
-
-## Important Notes
-
-1. **Connecting to Power:**
-   - Ensure your design is connected to power using the power pins on the wrapper.
-   - Use the `vccd1_connection` and `vssd1_connection` macros, which contain the necessary vias and nets for power connections.
-
-2. **Flattening the Design:**
-   - If you plan to flatten your design within the `openframe_project_wrapper`, do not buffer the analog pins using standard cells.
-
-3. **Running Custom Steps:**
-   - Execute the custom step in OpenLane that copies the power pins from the template DEF. If this step is skipped, the precheck will fail, and your design will not be powered.
+## 📂 Repository Structure
